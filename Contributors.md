@@ -8,7 +8,7 @@ There are 4 main concerns for contributing to DaxWalker which are listed below.
 These 4 cases should cover 99% of all questions when looking into contributing for DaxWalker but please
 feel free to contact me if anything or examples are missing.
 
-To understand the flow of the walker, take a look at `handlePathHandle` in 
+To understand the flow of the walker, take a look at `handlePath` in 
 [PathWalker](src/scripts/dax/walker/engine/PathWalker.java) and along with the higher level function `walk`.
 DaxWalker breaks down each loop by analyzing the path in
 [PathAnalyzer](src/scripts/dax/walker/engine/compute/PathAnalyzer.java). It walks to the furthest tile it can and will

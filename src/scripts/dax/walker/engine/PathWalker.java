@@ -96,7 +96,7 @@ public class PathWalker implements Painting {
         collision = getCollisionData();
         parentMap = Pathfinder.parentMap(collision);
         pathAnalyzeResult = PathAnalyzer.compute(path, parentMap);
-        switch (handlePathHandle(path, pathAnalyzeResult, retryAttemptsLeft, walkCondition)) {
+        switch (handlePath(path, pathAnalyzeResult, retryAttemptsLeft, walkCondition)) {
             case HANDLED_SCENARIO_SUCCESSFULLY -> {
                 return walk(path, walkCondition, maxRetries); // reset max retries
             }
@@ -117,7 +117,7 @@ public class PathWalker implements Painting {
         return false;
     }
 
-    private State handlePathHandle(RSTile[] path, PathAnalyzeResult analyzed, int retryAttemptsLeft, WalkCondition walkCondition) {
+    private State handlePath(RSTile[] path, PathAnalyzeResult analyzed, int retryAttemptsLeft, WalkCondition walkCondition) {
         if (analyzed.getFurthestReachable() == null)
             throw new IllegalStateException("Invalid furthest reachable analyze result");
 
