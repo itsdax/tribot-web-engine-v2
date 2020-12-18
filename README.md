@@ -2,11 +2,11 @@
 
 ## Summary
 
-This client is to used by [Tribot](https://tribot.org/) for navigating throughout OSRS.
+This client is written for [Tribot](https://tribot.org/) and used to navigate throughout OSRS.
 This is V2 of Tribot's webwalker engine. This is currently in **BETA**.
 All paths are generated remotely on a server. 
 This repository contains the client side logic for consuming the paths returned by the server.
-There should (rarely) be missing path links. Please submit a ticket and this will be mapped whenever possible.
+There should (rarely) be missing mapped areas. Please submit a ticket and this will be mapped whenever possible.
 
 For users coming from V1, this version has improved obstacle and pathing detection locally.
 The limitation is that this version does not have all the custom handlers of V1, which has been polished and patched
@@ -16,8 +16,8 @@ implement them. Please check out [Adding Area and Custom Handlers](#Adding-Area-
 ## Features
 - **Speed**: Extremely fast computation with a worst case of 200ms (not including latency to backends)
 - **Server Sided**: CPU + memory heavy computations are all done remotely.
-- **Short-cuts**: Uses shortcuts/obstacles whenever possible accounting for skill/quest requirements
-- **Danger Weighting**: Avoids dangerous areas when low combat (i.e: dark wizard circle south of Varrock)
+- **Short-cuts**: Uses shortcuts/obstacles whenever possible while accounting for skill/quest/item requirements
+- **Danger Path Weighting**: Avoids dangerous areas when low combat level (i.e: dark wizard circle south of Varrock)
 - **Teleports**: Uses teleports available for your character
 
 Visit [Explv](https://explv.github.io/) to try out Dax Path generation and see if it supports the area you need.
@@ -27,7 +27,7 @@ Visit [Explv](https://explv.github.io/) to try out Dax Path generation and see i
 
 ## Usage
 
-```java15
+```java
 package scripts;
 
 import org.tribot.api2007.types.RSTile;
@@ -83,7 +83,7 @@ Please visit https://admin.dax.cloud/ for more information. To use your Api Keys
 
 [![Api Keys](https://i.imgur.com/Qwc0115.png)](https://admin.dax.cloud)
 
-## Adding Area and Custom Handlers
+## Adding Areas and Custom Handlers
 
 Please refer to [Contributor's Guide](./Contributors.md)
 
