@@ -13,6 +13,14 @@ The limitation is that this version does not have all the custom handlers of V1,
 over 5 years. I encourage users to feel free and submit code to support any custom area handlers if they happen to
 implement them. Please check out [Adding Area and Custom Handlers](#Adding-Area-and-Custom-Handlers)
 
+#### Important for BETA testers
+
+The current state of the repo is very primitive.
+All generic conditions should mostly be supported, but there are very only a few amount of teleports + custom handlers
+currently added.
+If you're planning on adding this to a script that will be using a lot of teleports or custom paths, it is likely you
+will hit an unsupported path, or that the walker engine will not recognize your teleport.
+
 ## Features
 - **Speed**: Extremely fast computation with a worst case of 200ms (not including latency to backends)
 - **Server Sided**: CPU + memory heavy computations are all done remotely.
@@ -71,7 +79,7 @@ public class WalkerTest extends Script implements Painting {
                 enableRunEnergy();
             }
             if (pkerNearby()) {
-                return true; // EXITS the walker and the walkTO() will return false!
+                return true; // EXITS the walker and the walkTo() will return false!
             }
             return false;
         });

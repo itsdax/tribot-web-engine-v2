@@ -155,9 +155,20 @@ public enum Teleport {
 
     ;
 
+    // Estimated cost of a move. For example, moving from a tile to the immediate left tile is 1 move cost unit.
+    // Taking a boat to karamja costs 30 coins and ~15 seconds, I personally would estimate that into 35 move cost
+    // units.
     private final int moveCost;
+
+    // Where this teleport will bring you
     private final RSTile location;
+
+    // Requirement to activate this teleport
+    // i.e: If teleport tab, requires teleport tab to be in inventory.
+    // i.e: If magic spell, require Magic level and runes to be in inventory as well as correct Spell Book.
     private final Requirement requirement;
+
+    // Action to take to execute the teleport. (Break teleport tab, click spell, etc)
     private final Action<Void> action;
 
     Teleport(int moveCost, RSTile location, Requirement requirement, Action<Void> action) {
