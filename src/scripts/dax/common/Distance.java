@@ -6,7 +6,7 @@ import org.tribot.api2007.types.RSTile;
 
 public class Distance {
 
-    public static double from(RSTile destination) {
+    public static double from(Positionable destination) {
         RSTile position = Player.getPosition();
         if (position == null) return Double.MAX_VALUE;
         return position.distanceTo(destination);

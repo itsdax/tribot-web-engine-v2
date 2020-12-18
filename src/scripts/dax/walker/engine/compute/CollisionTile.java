@@ -9,7 +9,7 @@ import static scripts.dax.walker.engine.compute.CollisionFlags.*;
 public class CollisionTile {
 
     @Getter
-    private final int x, y, collisionData;
+    private final int collisionData;
 
     public boolean blockedNorth() {
         return blockedNorth(this.collisionData);
@@ -31,7 +31,7 @@ public class CollisionTile {
         return isWalkable(this.collisionData);
     }
 
-    public boolean isInitialized() {
+    public boolean isNotLoaded() {
         return blockedNorth() && blockedEast() && blockedSouth() && blockedWest() && !isWalkable();
     }
 
@@ -62,7 +62,7 @@ public class CollisionTile {
                 || checkFlag(collisionData, CLOSED));
     }
 
-    public static boolean isInitialized(int collisionData) {
+    public static boolean isNotLoaded(int collisionData) {
         return checkFlag(collisionData, INITIALIZED);
     }
 

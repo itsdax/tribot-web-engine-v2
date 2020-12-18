@@ -37,14 +37,17 @@ public final class Pathfinder {
         return n != null && n.getMoveCost() != Double.MAX_VALUE;
     }
 
+    public static Node[][] parentMap() {
+        return parentMap(PathFinding.getCollisionData());
+    }
+
+
     /**
      * Computes the paths for all immediate walkable tiles in the current region.
      *
      * @return Map containing processed pathfinding information
      */
-    public static Node[][] parentMap() {
-        int[][] collisionFlags = PathFinding.getCollisionData();
-
+    public static Node[][] parentMap(int[][] collisionFlags) {
         // Do not use world tiles for grabbing index
         RSTile playerPositionWorldTile = Player.getPosition();
         if (playerPositionWorldTile == null) {

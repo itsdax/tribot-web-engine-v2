@@ -4,13 +4,13 @@ import lombok.Getter;
 import org.tribot.api2007.Player;
 import org.tribot.api2007.Projection;
 import org.tribot.api2007.types.RSTile;
-import org.tribot.api2007.util.ProjectionUtility;
 import org.tribot.script.interfaces.Painting;
 import scripts.dax.common.AccurateMouse;
 import scripts.dax.common.Distance;
 import scripts.dax.common.Movement;
 import scripts.dax.walker.data.WalkCondition;
-import scripts.dax.walker.debug.PathfindingDebugger;
+import scripts.dax.walker.debug.DaxWalkerDebugger;
+import scripts.dax.walker.engine.compute.Direction;
 import scripts.dax.walker.engine.compute.PathAnalyzeResult;
 import scripts.dax.walker.engine.compute.PathAnalyzer;
 import scripts.dax.walker.engine.compute.Pathfinder;
@@ -19,6 +19,7 @@ import scripts.dax.walker.engine.handlers.ScenarioHandler;
 import scripts.dax.walker.engine.interaction.Teleport;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,10 +34,12 @@ import static java.util.Optional.ofNullable;
 import static org.tribot.api.General.*;
 import static org.tribot.api.Timing.waitCondition;
 import static org.tribot.api2007.Game.getDestination;
+import static org.tribot.api2007.PathFinding.getCollisionData;
 import static org.tribot.api2007.ext.Ships.crossGangplank;
 import static org.tribot.api2007.ext.Ships.isOnShip;
 import static scripts.dax.common.Constants.NULL_TILE;
 import static scripts.dax.common.DaxLogger.*;
+import static scripts.dax.walker.debug.DaxWalkerDebugger.Draw;
 import static scripts.dax.walker.engine.PathWalker.State.*;
 import static scripts.dax.walker.engine.handlers.ScenarioHandlers.AVAILABLE_HANDLERS;
 
@@ -45,13 +48,17 @@ public class PathWalker implements Painting {
 
     private final int maxRetries;
     private final Lock pathLock;
+    private final DaxWalkerDebugger daxWalkerDebugger;
+
     private RSTile[] currentPath;
+    private int[][] collision;
     private Pathfinder.Node[][] parentMap;
     private PathAnalyzeResult pathAnalyzeResult;
 
     public PathWalker(int maxRetries) {
         this.maxRetries = maxRetries;
         this.pathLock = new ReentrantLock();
+        this.daxWalkerDebugger = new DaxWalkerDebugger();
     }
 
     public enum State {
@@ -86,7 +93,8 @@ public class PathWalker implements Painting {
             return false;
         }
 
-        parentMap = Pathfinder.parentMap();
+        collision = getCollisionData();
+        parentMap = Pathfinder.parentMap(collision);
         pathAnalyzeResult = PathAnalyzer.compute(path, parentMap);
         switch (handlePathHandle(path, pathAnalyzeResult, retryAttemptsLeft, walkCondition)) {
             case HANDLED_SCENARIO_SUCCESSFULLY -> {
@@ -109,7 +117,7 @@ public class PathWalker implements Painting {
         return false;
     }
 
-    private static State handlePathHandle(RSTile[] path, PathAnalyzeResult analyzed, int retryAttemptsLeft, WalkCondition walkCondition) {
+    private State handlePathHandle(RSTile[] path, PathAnalyzeResult analyzed, int retryAttemptsLeft, WalkCondition walkCondition) {
         if (analyzed.getFurthestReachable() == null)
             throw new IllegalStateException("Invalid furthest reachable analyze result");
 
@@ -118,8 +126,8 @@ public class PathWalker implements Painting {
         RSTile walkingTowards = ofNullable(getDestination()).orElse(Player.getPosition());
 
         // Most basic case; Just walk to the furthest tile in path
-        if (walkingTowards.distanceToDouble(analyzed.getFurthestReachable()) >= 2)
-            return simpleWalkToTile(analyzed.getFurthestReachable(), walkCondition);
+        if (walkingTowards.distanceToDouble(analyzed.getFurthestReachable()) >= 3)
+            return simpleWalkToTile(randomize(analyzed.getFurthestReachable()), walkCondition);
 
         // We've arrived
         if (analyzed.getFurthestReachable().equals(lastTileOfPath(path))) return COMPLETED_PATH;
@@ -192,6 +200,27 @@ public class PathWalker implements Painting {
         return HANDLED_SCENARIO_SUCCESSFULLY;
     }
 
+    /**
+     *
+     * @param tile main tile you are trying to reach
+     * @return A random tile accounting for clickability, and reachability (computed via collision)
+     */
+    private RSTile randomize(RSTile tile) {
+        RSTile local = tile.toLocalTile();
+
+        List<RSTile> list = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            if (!direction.isValidDirection(local.getX(), local.getY(), collision)) continue;
+
+            Point p = Projection.tileToMinimap(direction.of(tile));
+            if (p == null || p.x == -1 || p.y == -1 || !Projection.isInMinimap(p)) continue;
+
+            list.add(direction.of(tile));
+        }
+
+        return list.get(random(0, list.size() - 1));
+    }
+
     private static State handleShip() {
         if (!crossGangplank()) {
             warn("Failed to cross ship gangplank");
@@ -248,57 +277,20 @@ public class PathWalker implements Painting {
 
         Graphics2D g = (Graphics2D) graphics;
 
-        ProjectionUtility projectionUtility = new ProjectionUtility();
-        Point previousMinimap = null;
-        for (RSTile tile : path) {
-            Point p = projectionUtility.tileToMinimap(tile);
-            if (p == null || p.x == -1 || p.y == -1) continue;
-
-            if (previousMinimap == null) {
-                previousMinimap = p;
-                continue;
-            }
-
-            g.setColor(new Color(0, 255, 11, 140));
-            g.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g.drawLine(previousMinimap.x, previousMinimap.y, p.x, p.y);
-            previousMinimap = p;
-
-            g.setColor(new Color(31, 106, 0, 180));
-            g.fillPolygon(Projection.getTileBoundsPoly(tile, 0));
-        }
-
-        PathfindingDebugger.drawPaths(g, parentMap);
-
+        List<Draw> draws = new ArrayList<>();
         PathAnalyzeResult pathAnalyzeResult = this.pathAnalyzeResult;
         if (pathAnalyzeResult != null) {
             RSTile furthestReachable = pathAnalyzeResult.getFurthestReachable();
-            if (furthestReachable != null) {
-                Point p = Projection.tileToMinimap(furthestReachable);
-                if (p != null && p.x != -1 && p.y != -1) {
-                    g.setColor(new Color(255, 66, 66, 180));
-                    g.fillOval(p.x - 3, p.y - 3, 6, 6);
-                }
-            }
+            if (furthestReachable != null) draws.add(new Draw(furthestReachable, new Color(255, 66, 66)));
 
             RSTile current = pathAnalyzeResult.getCurrentTile();
-            if (current != null) {
-                Point p = Projection.tileToMinimap(current);
-                if (p != null && p.x != -1 && p.y != -1) {
-                    g.setColor(new Color(30, 93, 255, 180));
-                    g.fillOval(p.x - 3, p.y - 3, 6, 6);
-                }
-            }
+            if (current != null) draws.add(new Draw(current, new Color(30, 93, 255)));
 
             RSTile next = pathAnalyzeResult.getTileAfterFurthestReachable();
-            if (next != null) {
-                Point p = Projection.tileToMinimap(next);
-                if (p != null && p.x != -1 && p.y != -1) {
-                    g.setColor(new Color(255, 206, 30, 180));
-                    g.fillOval(p.x - 3, p.y - 3, 6, 6);
-                }
-            }
+            if (next != null) draws.add(new Draw(next, new Color(255, 206, 30)));
         }
+
+        daxWalkerDebugger.drawDebug(g, path, draws.toArray(Draw[]::new));
     }
 
 }
