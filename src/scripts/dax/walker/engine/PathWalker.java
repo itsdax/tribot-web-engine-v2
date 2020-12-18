@@ -203,7 +203,7 @@ public class PathWalker implements Painting {
     /**
      *
      * @param tile main tile you are trying to reach
-     * @return A random tile accounting for clickability, and reachability (computed via collision)
+     * @return A random tile accounting for clickable, and reachability (computed via collision)
      */
     private RSTile randomize(RSTile tile) {
         RSTile local = tile.toLocalTile();

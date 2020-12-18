@@ -1,5 +1,6 @@
 package scripts.dax.walker;
 
+import com.google.common.annotations.Beta;
 import org.tribot.api.interfaces.Positionable;
 import org.tribot.api2007.Player;
 import org.tribot.api2007.types.RSTile;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Beta
 public class DaxWalker implements Painting {
 
     private final DaxWalkerServerClient server;
