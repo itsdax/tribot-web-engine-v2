@@ -61,7 +61,21 @@ public class WalkerTest extends Script implements Painting {
 
         // Walk to a location
         WebWalker.walkTo(new RSTile(1, 2, 3));
-        
+
+        // Walk to a location while actively checking for conditions
+        WebWalker.walkTo(new RSTile(1, 2, 3), () -> {
+            if (isHpLow()) {
+                eatFood();
+            }
+            if (shouldEnableRunEnergy()) {
+                enableRunEnergy();
+            }
+            if (pkerNearby()) {
+                return true; // EXITS the walker and the walkTO() will return false!
+            }
+            return false;
+        });
+      
         // Walks to closest bank
         WebWalker.walkToBank();
         
