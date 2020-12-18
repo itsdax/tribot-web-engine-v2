@@ -2,7 +2,7 @@
 
 ## Summary
 
-This client is to used by [Tribot](tribot.org) for navigating throughout OSRS.
+This client is to used by [Tribot](https://tribot.org/) for navigating throughout OSRS.
 This is V2 of Tribot's webwalker engine. This is currently in **BETA**.
 All paths are generated remotely on a server. 
 This repository contains the client side logic for consuming the paths returned by the server.
@@ -19,8 +19,6 @@ implement them. Please check out [Adding Area and Custom Handlers](#Adding-Area-
 - **Short-cuts**: Uses shortcuts/obstacles whenever possible accounting for skill/quest requirements
 - **Danger Weighting**: Avoids dangerous areas when low combat (i.e: dark wizard circle south of Varrock)
 - **Teleports**: Uses teleports available for your character
-
-
 
 Visit [Explv](https://explv.github.io/) to try out Dax Path generation and see if it supports the area you need.
 <p align="center">
@@ -52,8 +50,13 @@ public class WalkerTest extends Script implements Painting {
 
     @Override
     public void run() {
+        // Instantiate a server client with your API keys
         DaxWalkerServerClient daxWalkerServerClient = new DaxWalkerServerClient("PUBLIC-KEY", "SECRET-KEY");
+
+        // Create instance of DaxWalker
         walker = new DaxWalker(daxWalkerServerClient, new Navigator());
+
+        // IMPORTANT: In order to use the convenience class 'WebWalker', you MUST initialize the singleton
         WebWalker.setDaxWalker(walker);
 
         // Walk to a location
@@ -68,6 +71,7 @@ public class WalkerTest extends Script implements Painting {
 
     @Override
     public void onPaint(Graphics graphics) {
+        // Allows for DEBUG paint. This is highly optimized, but will still consume a bit of CPU.
         if (walker != null) walker.onPaint(graphics);
     }
 }
